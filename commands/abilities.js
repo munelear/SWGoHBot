@@ -17,7 +17,7 @@ class Abilities extends Command {
         const searchName = String(args.join(' ')).toLowerCase().replace(/[^\w\s]/gi, '');
 
         let embeds = true;
-    
+
         const guildConf = message.guildSettings;
         if (message.guild) {
             if (guildConf['useEmbeds'] !== true || !message.channel.permissionsFor(client.user).has('EMBED_LINKS')) {
@@ -37,7 +37,7 @@ class Abilities extends Command {
         // Find any characters that match that
         const chars = client.findChar(searchName, charList);
         if (chars.length <= 0) {
-            return message.channel.send(message.language.get('COMMAND_ABILITIES_INVALID_CHARACTER', config.prefix, this.help.usage)).then(msg => msg.delete(4000)).catch(console.error);        
+            return message.channel.send(message.language.get('COMMAND_ABILITIES_INVALID_CHARACTER', config.prefix, this.help.usage)).then(msg => msg.delete(4000)).catch(console.error);
         }
 
         chars.forEach(character => {
@@ -45,7 +45,7 @@ class Abilities extends Command {
                 const fields = [];
                 for (const ability in character.abilities) {
                     const abilities = character.abilities[ability];
-                    
+
                     var mat = omega;
                     if (abilities.tier === 'zeta') {
                         mat = zeta;
@@ -57,13 +57,13 @@ class Abilities extends Command {
                     if (abilities.abilityCooldown > 0) {
                         cooldownString = message.language.get('COMMAND_ABILITIES_COOLDOWN', abilities.abilityCooldown);
                     }
-                
+
                     fields.push({
                         "name": ability,
                         "value": message.language.get('COMMAND_ABILITIES_ABILITY', abilities.type, mat, cooldownString, abilities.abilityDesc)
                     });
                 }
-                
+
                 message.channel.send({
                     embed: {
                         "color": `${character.side === "light" ? 0x5114e0 : 0xe01414}`,
@@ -83,7 +83,7 @@ class Abilities extends Command {
                 }
                 message.channel.send(` * ${character.name} * \n${abilityString}`, { code: 'md', split: true });
             }
-        });         
+        });
     }
 }
 

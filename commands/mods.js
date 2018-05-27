@@ -40,14 +40,15 @@ class Mods extends Command {
             const valueArray = [];
 
             for (const index in keyArray) {
-                const  key = keyArray[index];
-                let localizationKey = "COMMAND_MODS_UNKNOWN";
+                const subKey = keyArray[index];
+                // default to pass through the value if localized text mapping not found
+                let localizedText = subKey;
 
-                if (localizationKeyMap[key]) {
-                    localizationKey = localizationKeyMap[key];
+                if (localizationKeyMap[subKey]) {
+                    localizedText = message.language.get(localizationKeyMap[subKey]);
                 }
 
-                valueArray.push(message.language.get(localizationKey));
+                valueArray.push(localizedText);
             }
 
             return valueArray.join("/ ");

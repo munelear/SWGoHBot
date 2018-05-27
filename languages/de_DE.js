@@ -503,7 +503,6 @@ module.exports = class extends Language {
             COMMAND_MODS_POTENCY_STAT: "Effektivitaet",
             COMMAND_MODS_SPEED_STAT: "Tempo",
             COMMAND_MODS_TENACITY_STAT: "Zaehigkeit",
-            COMMAND_MODS_UNKNOWN: "Unbekannt",
 
             // Mods Command
             COMMAND_MODS_NEED_CHARACTER: (prefix, usage) => `Benoetigt einen Charakter. Der Befehl lautet: \`${prefix}${usage}\``,

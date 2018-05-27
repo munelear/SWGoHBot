@@ -21,7 +21,7 @@ module.exports = async (client, member) => {
             client.announceMsg(guild, welcomeMessage);
         } catch (e) {
             client.log('ERROR', `Error sending welcomeMessage:\n\nGuildConf:\n${inspect(guildConf)}\n\nError:\n${e}`);
-        } 
+        }
     }
 };
 

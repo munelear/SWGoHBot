@@ -77,7 +77,7 @@ class Ships extends Command {
             shipString += `${message.language.get('COMMAND_SHIPS_CREW')}: ${ship.crew.join(', ').toProperCase()}\n`;
             shipString += `${message.language.get('COMMAND_SHIPS_FACTIONS')}: ${ship.factions.join(', ').toProperCase()}\n\n`;
             shipString += message.language.get('COMMAND_SHIPS_CODE_ABILITES_HEADER');
-        
+
             for (var thisAbility in ship.abilities) {
                 const abilities = ship.abilities[thisAbility];
                 shipString += message.language.get('COMMAND_SHIPS_CODE_ABILITIES', ability, abilities);

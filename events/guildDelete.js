@@ -4,7 +4,7 @@ module.exports = async (client, guild) => {
     // await client.guildSettings.destroy({where: {guildID: guild.id}})
     //     .then(() => {})
     //     .catch(error => { client.log('ERROR',`Broke in guildDelete(settings) ${error}`); });
-    
+
     // Log that the bot left
     client.log('GuildDelete', `I left ${guild.name}(${guild.id})`, 'Log', 'diff', '-');
 

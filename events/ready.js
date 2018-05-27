@@ -21,13 +21,13 @@ module.exports = async client => {
     guildList.forEach(async (guildID) => {
         // If there is no config, give em one, and an events object while we're at it
         await client.guildSettings.findOrCreate({where: {guildID: guildID}, defaults: {
-            guildID: guildID, 
-            adminRole: defSet.adminRole, 
-            enableWelcome: defSet.enableWelcome, 
-            welcomeMessage: defSet.welcomeMessage, 
-            useEmbeds: defSet.useEmbeds, 
-            timezone: defSet.timezone, 
-            announceChan: defSet.announceChan, 
+            guildID: guildID,
+            adminRole: defSet.adminRole,
+            enableWelcome: defSet.enableWelcome,
+            welcomeMessage: defSet.welcomeMessage,
+            useEmbeds: defSet.useEmbeds,
+            timezone: defSet.timezone,
+            announceChan: defSet.announceChan,
             useEventPages: defSet.useEventPages,
             language: defSet.language
         }})
@@ -42,7 +42,7 @@ module.exports = async client => {
     }
     client.log('Ready', readyString);
 
-    // Sets the status as the current server count and help command 
+    // Sets the status as the current server count and help command
     const playingString =  `${client.config.prefix}help ~ swgohbot.com`;
     // const playingString =  `${client.config.prefix}help ~ ${client.guilds.size} servers`;
     client.user.setPresence({ game: { name: playingString, type: 0 } }).catch(console.error);

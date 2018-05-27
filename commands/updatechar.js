@@ -23,7 +23,7 @@ class Updatechar extends Command {
         } else {
             action = args[0];
         }
-        
+
         // If their message only has what to update, but not who
         if (args.length < 2) {
             return message.channel.send(message.language.get('COMMAND_UPDATECHAR_NEED_CHAR'));
@@ -86,16 +86,16 @@ class Updatechar extends Command {
                     return '';
             }
         }
-        
+
         async function updateCharacterMods(client, message, charIndex) {
             const jsonGrab = await snekfetch.get('http://apps.crouchingrancor.com/mods/advisor.json');
             const characterListCR = JSON.parse(jsonGrab.text).data;
-        
+
             const upChar = client.characters[charIndex];
-        
+
             let updated = false;
             const cleanReg = /['-\s]/g;
-        
+
             characterListCR.forEach(thisChar => {
                 if (thisChar.cname.toLowerCase().replace(cleanReg, '') === upChar.name.toLowerCase().replace(cleanReg, '')) {
                     console.log('Found the Character Mods');
@@ -111,13 +111,13 @@ class Updatechar extends Command {
                     if (upChar[setName]) {
                         setName = thisChar.name;
                     }
-        
+
                     // Go through all the variations of mods, and if they're the same,
                     // ignore em. If they're different, add it in as a new set
                     let newSet = true;
                     for (var thisSet in upChar.mods) {
                         const set = upChar.mods[thisSet];
-        
+
                         // Take out the space behind any slashes
                         thisChar.square = thisChar.square.replace(/\s+\/\s/g, '/ ');
                         thisChar.arrow = thisChar.arrow.replace(/\s+\/\s/g, '/ ');
@@ -152,7 +152,7 @@ class Updatechar extends Command {
                     }
                 }
             });
-            
+
             // If anything was updated, save it
             if (updated) {
                 updated = false;
@@ -166,17 +166,17 @@ class Updatechar extends Command {
                 message.channel.send(`Sorry, but there were no new modsets for ${client.characters[charIndex].name}.`);
             }
         }
-        
+
         async function updateCharacterInfo(client, message, charIndex) {
             const charList = client.characters;
             const ggGrab = await snekfetch.get(charList[charIndex].url);
             const ggGrabText = ggGrab.text;
-        
+
             const $ = cheerio.load(ggGrabText);
-        
+
             // Get the character's image link
             charList[charIndex].avatarURL = 'https:' + $('.panel-profile-img').attr('src');
-        
+
             // Get the character's affiliations
             let affiliations = [];
             $('.panel-body').each(function() {
@@ -199,7 +199,7 @@ class Updatechar extends Command {
                 let abilityMat = $(this).find('img').attr('title').split(' ').join('');
                 let abilityType = $(this).find('small').text();
                 let cooldown = $(this).find('h5 small').text().split(' ')[0];
-        
+
                 // Make sure it doesn't have any line returns in there
                 if (abilityName.indexOf('\n') !== -1) {
                     abilityName = abilityName.replace(/\n/g, '');
@@ -210,7 +210,7 @@ class Updatechar extends Command {
                 if (abilityMat.indexOf('\n') !== -1) {
                     abilityMat = abilityMat.replace(/\n/g, '');
                 }
-        
+
                 // Make sure it grabs the right one to work with the rest
                 if (abilityMat === "AbilityMaterialOmega") {
                     abilityMat = "omega";
@@ -219,7 +219,7 @@ class Updatechar extends Command {
                 } else if (abilityMat === "AbilityMaterialZeta") {
                     abilityMat = "zeta";
                 }
-        
+
                 // Grab the ability type
                 if (abilityType.indexOf('Basic') !== -1) {
                     abilityType = 'Basic';
@@ -236,7 +236,7 @@ class Updatechar extends Command {
                 } else {
                     abilityName = abilityName.split(' ').slice(0, -3).join(' ').toString();
                 }
-        
+
                 charList[charIndex].abilities[abilityName] = {
                     "type": abilityType,
                     "abilityCooldown": cooldown,
@@ -249,11 +249,11 @@ class Updatechar extends Command {
                     }
                 };
             });
-        
+
             // Grab ability costs
             $('.list-group-item-ability').each(function() {
                 const aName = $(this).find('.ability-mechanics-link').text().replace(/^View /, '').replace(/\sMechanics$/, '');
-        
+
                 let mk3s = 0, omegas = 0, zetas = 0;
                 // Each level of the ability is in a tr
                 const aCost = [];
@@ -278,7 +278,7 @@ class Updatechar extends Command {
                     'zeta': zetas
                 };
             });
-        
+
             const stats = {
                 // Primary
                 'Power':0,
@@ -304,11 +304,11 @@ class Updatechar extends Command {
                 // Activation
                 'activation': 0
             };
-        
+
             $('.content-container-primary-aside').each(function() {
                 $(this).find('.media-body').each(function() {
                     const rows = $(this).html().split('\n');
-        
+
                     rows.forEach(stat => {
                         if (stat.startsWith('<p></p>') || stat.startsWith('</p>')) {
                             stat = stat.replace(/<p><\/p>/g, '').replace(/^<p>/g, '').replace(/^<\/p>/g, '');
@@ -327,15 +327,15 @@ class Updatechar extends Command {
                     });
                 });
             });
-        
+
             charList[charIndex].stats = stats;
-        
+
             const shardLocations = { "dark": [], "light": [], "cantina": [], "shops": [] };
-        
+
             $(".panel-body:contains('Shard Locations')").each(function() {
                 $(this).find('li').each(function() {
                     const text = $(this).text();
-                    if (text.startsWith('Cantina Battles')) { 
+                    if (text.startsWith('Cantina Battles')) {
                         const battle = text.replace(/^Cantina Battles: Battle /, '').replace(/\s.*/g, '');
                         shardLocations.cantina.push(battle);
                     } else if (text.startsWith('Dark Side Battles')) {
@@ -358,12 +358,12 @@ class Updatechar extends Command {
                         shardLocations.shops.push('Galactic War Shipments');
                     } else if (text.startsWith('Shard Shop')) {
                         shardLocations.shops.push('Shard Shop');
-                    } 
+                    }
                 });
             });
-        
+
             charList[charIndex].shardLocations = shardLocations;
-        
+
             fs.writeFile("./data/characters.json", JSON.stringify(client.characters, null, 4), 'utf8', function(err) {
                 if (err) {
                     return console.log(err);
@@ -373,7 +373,7 @@ class Updatechar extends Command {
                 }
             });
         }
-        
+
         async function updateCharacterGear(client, message, charIndex) {
             const charList = client.characters;
             let gearLink = client.characters[charIndex].url;
@@ -384,26 +384,26 @@ class Updatechar extends Command {
             }
             const gearGrab = await snekfetch.get(gearLink);
             const gearGrabText = gearGrab.text;
-        
+
             const $ = cheerio.load(gearGrabText);
-        
+
             // Get the gear
             const gear = {};
             $('.media.list-group-item.p-0.character').each(function(i) {
                 const thisGear = $(this).find('a').attr('title');
                 const gearLvl = 'Gear ' + (Math.floor(i / 6) + 1).toString();
-        
+
                 if (gear[gearLvl]) {
                     gear[gearLvl].push(thisGear);
                 } else {
                     gear[gearLvl] = [thisGear];
                 }
             });
-        
+
             Object.keys(gear).forEach(gearLvl => {
                 charList[charIndex].gear[gearLvl] = gear[gearLvl];
             });
-        
+
             fs.writeFile("./data/characters.json", JSON.stringify(charList, null, 4), 'utf8', function(err) {
                 if (err) {
                     return console.log(err);
@@ -413,9 +413,9 @@ class Updatechar extends Command {
                 }
             });
         }
-        
-        
-        
+
+
+
         // Lvl is the string from each level of the ability
         function getCount(lvl) {
             const mk3 = '<img src="//swgoh.gg/static/img/assets/tex.skill_pentagon_white.png" style="width: 25px;">';

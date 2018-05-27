@@ -12,7 +12,7 @@ class Activites extends Command {
 
     run(client, message, args) {
         const guildConf = message.guildSettings;
-        
+
         let day = '';
 
         if (!args[0]) {

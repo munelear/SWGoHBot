@@ -13,7 +13,7 @@ class Setconf extends Command {
         });
     }
 
-    async run(client, message, args) {    
+    async run(client, message, args) {
         const config = client.config;
         const guildSettings = await client.guildSettings.findOne({where: {guildID: message.guild.id}, attributes: Object.keys(client.config.defaultSettings)});
         const guildConf = guildSettings.dataValues;
@@ -123,7 +123,7 @@ class Setconf extends Command {
                         client.guildSettings.update({announceChan: ''}, {where: {guildID: message.guild.id}});
                     }
                     break;
-                case "useeventpages": 
+                case "useeventpages":
                     if (onVar.includes(value.toLowerCase())) {
                         boolVar = true;
                     } else if (offVar.includes(value.toLowerCase())) {

@@ -5,7 +5,7 @@ class UpdateClient extends Command {
         super(client, {
             name: 'updateclient',
             category: "Dev",
-            enabled: true, 
+            enabled: true,
             aliases: ['uc'],
             permLevel: 10
         });
@@ -15,8 +15,8 @@ class UpdateClient extends Command {
         let msg = null;
         try {
             msg = await message.channel.send('Updating client - please wait...');
-        } catch (e) { 
-            console.log('Error updating client: ' + e); 
+        } catch (e) {
+            console.log('Error updating client: ' + e);
         }
 
         try {
@@ -29,7 +29,7 @@ class UpdateClient extends Command {
             }
         } catch (e) {
             msg.edit('Game data could not be updated');
-            console.log('Error updating client: ' + e); 
+            console.log('Error updating client: ' + e);
         }
     }
 }
