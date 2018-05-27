@@ -4,7 +4,7 @@ class Poll extends Command {
     constructor(client) {
         super(client, {
             name: 'poll',
-            guildOnly: true,
+            guildOnly: false,
             category: "Misc",
             aliases: ['vote']
         });
@@ -15,7 +15,19 @@ class Poll extends Command {
         if (!action) {
             return message.channel.send(message.language.get('COMMAND_POLL_NO_ARG'));
         }
-        const pollID = `${message.guild.id}-${message.channel.id}`;
+
+        let pollID;
+
+        if (!message.guild) {
+            if (String(action.match(/\d{1,64}-\d{1,64}/))) {
+                pollID = action;
+            } else {
+                return message.channel.send(message.language.get('COMMAND_POLL_REQUIRES_POLLID', client.config.prefix));
+            }
+        } else {
+            pollID = `${message.guild.id}-${message.channel.id}`;
+        }
+
         const exists = await client.polls.findOne({where: {id: pollID}})
             .then(token => token != null)
             .then(isUnique => isUnique);
@@ -34,7 +46,36 @@ class Poll extends Command {
             poll = tempP.dataValues.poll;
         }
 
+        const vote = async function(opt) {
+            if (poll.options.length < opt+1) {
+                return message.channel.send(message.language.get('COMMAND_POLL_INVALID_OPTION'));
+            } else {
+                let voted = -1;
+                if (poll.votes[message.author.id] === opt) {
+                    return message.channel.send(message.language.get('COMMAND_POLL_SAME_OPT', poll.options[opt]));
+                } else if (poll.votes.hasOwnProperty(message.author.id)) {
+                    voted = poll.votes[message.author.id];
+                }
+                poll.votes[message.author.id] = opt;
+                await client.polls.update({poll: poll}, {where: {id: pollID}})
+                    .then(() => {
+                        if (voted !== -1) {
+                            return message.channel.send(message.language.get('COMMAND_POLL_CHANGED_OPT', poll.options[voted], poll.options[opt]));
+                        } else {
+                            return message.channel.send(message.language.get('COMMAND_POLL_REGISTERED', poll.options[opt]));
+                        }
+                    });
+            }
+        };
+
         switch (action) {
+            case 'anon': {
+                if (exists) {
+                    return message.channel.send(message.language.get('COMMAND_POLL_ANON', pollID, client.config.prefix));
+                } else {
+                    return message.channel.send(message.language.get('COMMAND_POLL_NO_POLL'));
+                }
+            }
             case 'start':
             case 'create': {
                 // Create a poll (lvl 3+)
@@ -65,10 +106,14 @@ class Poll extends Command {
                     poll: poll
                 })
                     .then(() => {
-                        return message.channel.send(message.language.get('COMMAND_POLL_CREATED', message.author.username, client.config.prefix, pollCheck(poll)));
-                    });               
+                        return message.channel.send(
+                            message.language.get('COMMAND_POLL_CREATED', message.author.username, client.config.prefix, pollCheck(poll))
+                            + "\n" +
+                            message.language.get('COMMAND_POLL_ANON', pollID, client.config.prefix)
+                        );
+                    });
                 break;
-            } 
+            }
             case 'view':
             case 'check': {
                 // Check the current poll
@@ -93,40 +138,31 @@ class Poll extends Command {
                         .then(() => {
                             return message.channel.send(message.language.get('COMMAND_POLL_FINAL', pollCheck(poll)));
                         })
-                        .catch(() => { 
+                        .catch(() => {
                             return message.channel.send(message.language.get('COMMAND_POLL_FINAL_ERROR', poll.question));
                         });
                 }
                 break;
             }
-            case String(action.match(/\d/)): {
+            case String(action.match(/\d{1,64}-\d{1,64}/)): {
+                if (!exists) {
+                    return message.channel.send(message.language.get('COMMAND_POLL_NO_POLL'));
+                } else if (optsJoin[0] && optsJoin[0].match(/\d+/)) {
+                    const opt = Math.abs(parseInt(optsJoin[0]));
+                    return await vote(opt);
+                } else {
+                    return message.channel.send(message.language.get('COMMAND_POLL_INVALID_OPTION'));
+                }
+            }
+            case String(action.match(/\d+/)): {
                 // Someone voting on an option
-                // Check if there is a poll going, then if there is, vote, else tell em that there isn't 
+                // Check if there is a poll going, then if there is, vote, else tell em that there isn't
                 if (!exists) {
                     return message.channel.send(message.language.get('COMMAND_POLL_NO_POLL'));
                 } else {
                     const opt = Math.abs(parseInt(action));
-                    if (poll.options.length < opt+1) {
-                        return message.channel.send(message.language.get('COMMAND_POLL_INVALID_OPTION'));
-                    } else {
-                        let voted = -1;
-                        if (poll.votes[message.author.id] === opt) {
-                            return message.channel.send(message.language.get('COMMAND_POLL_SAME_OPT', poll.options[opt]));
-                        } else if (poll.votes.hasOwnProperty(message.author.id)) {
-                            voted = poll.votes[message.author.id];
-                        }
-                        poll.votes[message.author.id] = opt;
-                        await client.polls.update({poll: poll}, {where: {id: pollID}})
-                            .then(() => {
-                                if (voted !== -1) {
-                                    return message.channel.send(message.language.get('COMMAND_POLL_CHANGED_OPT', poll.options[voted], poll.options[opt]));
-                                } else {
-                                    return message.channel.send(message.language.get('COMMAND_POLL_REGISTERED', poll.options[opt]));
-                                }
-                            });
-                    }
+                    return await vote(opt);
                 }
-                break;
             }
             default: {
                 // Help
@@ -142,7 +178,7 @@ class Poll extends Command {
             Object.keys(poll.votes).forEach(voter => {
                 voteCount[poll.votes[voter]] += 1;
             });
-            
+
             let outString = `**${poll.question}**\n`;
             Object.keys(voteCount).forEach(opt => {
                 outString += message.language.get('COMMAND_POLL_CHOICE', opt, voteCount[opt], poll.options[opt]);

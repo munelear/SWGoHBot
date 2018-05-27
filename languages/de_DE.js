@@ -588,7 +588,9 @@ module.exports = class extends Language {
             COMMAND_POLL_TOO_FEW_OPT: "Sie muessen mindestens 2 Optionen zur Wahl stellen.",
             COMMAND_POLL_TOO_MANY_OPT: "Sie koennen max. bis zu 10 Optionen zur Wahl stellen.",
             COMMAND_POLL_CREATED: (name, prefix, poll) => `**${name}** hat eine neue Umfrage gestartet:\nVote mit \`${prefix}poll <choice>\`\n\n${poll}`,
+            COMMAND_POLL_ANON : (pollId, prefix) => `To vote anonymously send a direct message including the poll ID:\n\`${prefix}poll ${pollId} <choice>\``,
             COMMAND_POLL_NO_POLL: "Es wird aktuell keine Umfrage durchgefuehrt",
+            COMMAND_POLL_REQUIRES_POLLID: (prefix) => `You need to provide a poll ID and choice. You can get the poll ID from your server using \`${prefix}poll anon\` and then try again using the format:\n \`${prefix}poll <poll ID> <choice>\``,
             COMMAND_POLL_FINAL: (poll) => `Endergebnisse fuer ${poll}`,
             COMMAND_POLL_FINAL_ERROR: (question) => `Loeschen fehlgeschlagen **${question}**, bitte erneut versuchen.`,
             COMMAND_POLL_INVALID_OPTION: "Das ist keine gueltige Option.",
@@ -626,6 +628,12 @@ module.exports = class extends Language {
                         action: "Close",
                         actionDesc: 'Beende die Umfrage und zeige das finale Ergebnis.',
                         usage: ';poll close',
+                        args: {}
+                    },
+                    {
+                        action: "Anon",
+                        actionDesc: 'Show the poll ID which can be used to vote anonymously via direct message.',
+                        usage: ';poll anon',
                         args: {}
                     }
                 ]

@@ -19,12 +19,12 @@ module.exports = async (client, message) => {
         guildSettings = await client.guildSettings.findOne({where: {guildID: message.guild.id}, attributes: Object.keys(client.config.defaultSettings)});
         guildSettings = guildSettings.dataValues;
     }
-    
+
 
     // For ease of use in commands and functions, we'll attach the settings
     // to the message object, so `message.guildSettings` is accessible.
     message.guildSettings = guildSettings;
-    
+
     // Load the language file for whatever language they have set
     message.language = client.languages[guildSettings.language];
 
@@ -34,14 +34,20 @@ module.exports = async (client, message) => {
     }
 
     // Also good practice to ignore any message that does not start with our prefix, which is set in the configuration file.
-    if (message.content.indexOf(client.config.prefix) !== 0) return;
+    if (message.content.indexOf(client.config.prefix) !== 0) {
+        if (!message.guild) {
+            return message.channel.send(`Hmm... I didn't see a command prefix, which is \`${client.config.prefix}\`. Include it and try your command again, or check out \`${client.config.prefix}help\``);
+        } else {
+            return;
+        }
+    }
 
     // Splits on line returns, then on spaces to preserve the line returns
     const nArgs = message.content.split(/(\n+)/);
     let args = [];
     nArgs.forEach(e => {
         const ne = e.split(' ').filter(String);
-        args = args.concat(ne);    
+        args = args.concat(ne);
     });
 
     // Get the command name/ remove it from the args
@@ -56,7 +62,7 @@ module.exports = async (client, message) => {
     // Some commands may not be useable in DMs. This check prevents those commands from running
     // and return a friendly error message.
     if (cmd && !message.guild && cmd.conf.guildOnly) {
-        return message.channel.send(message.language.BASE_COMMAND_UNAVAILABLE).then(msg => msg.delete(4000)).catch(console.error);
+        return message.channel.send(message.language.get("BASE_COMMAND_UNAVAILABLE")).then(msg => msg.delete(4000)).catch(console.error);
     }
 
     // If the command exists, **AND** the user has permission, run it.
@@ -80,11 +86,11 @@ module.exports = async (client, message) => {
             }
         }
 
-        
+
 
         const flagArgs = getFlags(cmd.conf.flags, cmd.conf.subArgs, args);
-        
-        
+
+
         // If they're just looking for the help, don't bother going through the command
         if (args.length === 1 && args[0].toLowerCase() === 'help') {
             client.helpOut(message, cmd);
@@ -110,7 +116,7 @@ module.exports = async (client, message) => {
 
 // Checks for any args that start with - or -- that match what the command is looking for
 function checkForArgs(key, args) {
-    if (args.includes('-'+key)) { 
+    if (args.includes('-'+key)) {
         return [true, '-'+key];
     } else if (args.includes('--'+key)) {
         return [true, '--'+key];
@@ -125,7 +131,7 @@ function getFlags(cFlags, cSubArgs, args) {
     const subArgs = {};
 
     const flagKeys = Object.keys(cFlags);
-    flagKeys.forEach(key => { 
+    flagKeys.forEach(key => {
         let found = checkForArgs(key, args);
         flags[key] = false;
         if (!found[0]) {
@@ -135,13 +141,13 @@ function getFlags(cFlags, cSubArgs, args) {
             }
         }
         if (found[0]) {
-            args.splice(args.indexOf(found[1]), 1);   
+            args.splice(args.indexOf(found[1]), 1);
             flags[key] = true;
         }
     });
 
     const subKeys = Object.keys(cSubArgs);
-    subKeys.forEach(key => { 
+    subKeys.forEach(key => {
         let found = checkForArgs(key, args);
         if (!found[0]) {
             for (let ix = 0; ix < cSubArgs[key].aliases.length; ix++) {
@@ -150,7 +156,7 @@ function getFlags(cFlags, cSubArgs, args) {
             }
         }
         if (found[0]) {
-            const res = args.splice(args.indexOf(found[1]), 2);    
+            const res = args.splice(args.indexOf(found[1]), 2);
             subArgs[key] = res[1] ? res[1] : null;
         } else {
             subArgs[key] = cSubArgs[key].default ? cSubArgs[key].default : null;
